@@ -25,14 +25,18 @@ jobs:
           flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Generate Android Native Files
+      - name: Generate Native Project
         run: flutter create --project-name=quran_app --platforms=android .
+
+      - name: Add Internet Permission
+        run: |
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Get Flutter Dependencies
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -40,6 +44,3 @@ jobs:
           name: quran-app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           
-          
-
-  
