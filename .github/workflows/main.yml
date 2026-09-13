@@ -25,22 +25,30 @@ jobs:
           flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Generate Native Project
-        run: flutter create --project-name=quran_app --platforms=android .
-
-      - name: Add Internet Permission
+      # 1. إنشاء مشروع جديد نظيف تماماً بملفات أندرويد جاهزة
+      - name: Create Clean Flutter Project
         run: |
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
+          cd ..
+          flutter create --project-name=quran_app fresh_app
 
-      - name: Get Flutter Dependencies
-        run: flutter pub get
+      # 2. نقل ملفات الكود والـ pubspec الخاصة بك إلى المشروع النظيف
+      - name: Copy Custom Code & Assets
+        run: |
+          cp -r lib/main.dart ../fresh_app/lib/main.dart 2>/dev/null || true
+          cp pubspec.yaml ../fresh_app/pubspec.yaml 2>/dev/null || true
+          cp -r assets ../fresh_app/ 2>/dev/null || true
 
-      - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons
+      # 3. إشعار التبعيات وبناء الـ APK
+      - name: Build APK Cleanly
+        run: |
+          cd ../fresh_app
+          flutter pub get
+          flutter build apk --release --no-tree-shake-icons
 
+      # 4. رفع الـ APK الناتج
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: quran-app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ../fresh_app/build/app/outputs/flutter-apk/app-release.apk
           
